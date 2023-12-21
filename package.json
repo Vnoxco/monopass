@@ -1,0 +1,22 @@
+{
+  "name": "monopass",
+  "version": "1.0.0",
+  "description": "App bridge for MonoBill",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Vnoxco/monopass.git"
+  },
+  "keywords": [
+    "MonoPass"
+  ],
+  "author": "MonoBill",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Vnoxco/monopass/issues"
+  },
+  "homepage": "https://github.com/Vnoxco/monopass#readme"
+}

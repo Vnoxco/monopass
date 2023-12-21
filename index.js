@@ -1,0 +1,108 @@
+let currentHeight = document.body.offsetHeight + 35;
+
+let sendMessage = function(data) {
+    if(data instanceof Event) {
+        window.parent.postMessage(JSON.stringify({
+            ...data,
+            event: data.name
+        }), '*');
+    } else if(data instanceof MonoAlert) {
+        window.parent.postMessage(JSON.stringify({
+            alert: data
+        }), '*');
+    } else {
+        window.parent.postMessage(JSON.stringify(data), '*');
+    }
+}
+
+class MonoAlert {
+    constructor(type, message) {
+        this.type = type;
+        this.message = message;
+    }
+}
+
+class Event {
+    constructor(name) {
+        this.name = name;
+    }
+}
+
+class LoadEvent extends Event {
+    constructor() {
+        super('load');
+        this.height = document.body.offsetHeight + 35;
+    }
+}
+
+class RouteChangeEvent extends Event {
+    constructor(route) {
+        super('route-change');
+        this.route = route
+    }
+}
+
+class ConfirmActionEvent extends Event {
+    constructor(id, message) {
+        super('confirm-action');
+        this.id = id;
+        this.message = message;
+    }
+}
+
+class Router {
+    push(route) {
+        sendMessage(new RouteChangeEvent(route))
+    }
+}
+
+// class HeightChange extends Event {
+//     constructor() {
+//         super('height-change');
+//         // this.height = document.body.offsetHeight + 40;
+//     }
+// }
+
+class MonoBillCore  {
+
+    constructor() {
+        this.router = new Router();
+        this.confirmActions = {};
+        sendMessage(new LoadEvent());
+        let self = this;
+
+        window.addEventListener('message', function(event) {
+            let message = JSON.parse(event.data);
+            if(message.request && message.request === 'height') {
+                window.parent.postMessage(JSON.stringify({
+                    height: document.body.offsetHeight + 35
+                }), '*');
+            }
+            if(typeof message.confirm_action !== 'undefined') {
+                if(typeof self.confirmActions[message.confirm_action] === 'function') {
+                    self.confirmActions[message.confirm_action]();
+                }
+            }
+        });
+    }
+
+    alert(type, message) {
+        sendMessage(new MonoAlert(type, message));
+    }
+
+    scrollToFirstError() {
+        sendMessage({
+            scrollToFirstError: true,
+        })
+    }
+
+    confirmAction(message, func) {
+        let id = Math.random().toString(36);
+        this.confirmActions[id] = func;
+        sendMessage(new ConfirmActionEvent(id, message));
+    }
+}
+
+const MonoBill = new MonoBillCore();
+
+module.exports = MonoBill;
