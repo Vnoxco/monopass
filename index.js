@@ -1,12 +1,12 @@
 let currentHeight = document.body.offsetHeight + 35;
 
-let sendMessage = function(data) {
-    if(data instanceof Event) {
+let sendMessage = function (data) {
+    if (data instanceof Event) {
         window.parent.postMessage(JSON.stringify({
             ...data,
             event: data.name
         }), '*');
-    } else if(data instanceof MonoAlert) {
+    } else if (data instanceof MonoAlert) {
         window.parent.postMessage(JSON.stringify({
             alert: data
         }), '*');
@@ -63,7 +63,9 @@ class Router {
 //     }
 // }
 
-class MonoBillCore  {
+class MonoBillCore {
+
+    listeners = {};
 
     constructor() {
         this.router = new Router();
@@ -71,15 +73,23 @@ class MonoBillCore  {
         sendMessage(new LoadEvent());
         let self = this;
 
-        window.addEventListener('message', function(event) {
+        window.addEventListener('message', function (event) {
             let message = JSON.parse(event.data);
-            if(message.request && message.request === 'height') {
+            if (message.request && message.request === 'height') {
                 window.parent.postMessage(JSON.stringify({
                     height: document.body.offsetHeight + 35
                 }), '*');
             }
-            if(typeof message.confirm_action !== 'undefined') {
-                if(typeof self.confirmActions[message.confirm_action] === 'function') {
+            if (message.route && typeof self.listeners['route-change'] !== 'undefined') {
+                let listeners = self.listeners['route-change'];
+                for (let i = 0; i < listeners.length; i++) {
+                    if (typeof listeners[i] === 'function') {
+                        listeners[i](message.route);
+                    }
+                }
+            }
+            if (typeof message.confirm_action !== 'undefined') {
+                if (typeof self.confirmActions[message.confirm_action] === 'function') {
                     self.confirmActions[message.confirm_action]();
                 }
             }
@@ -100,6 +110,13 @@ class MonoBillCore  {
         let id = Math.random().toString(36);
         this.confirmActions[id] = func;
         sendMessage(new ConfirmActionEvent(id, message));
+    }
+
+    on(eventName, callable) {
+        if (typeof this.listeners[eventName] === 'undefined') {
+            this.listeners[eventName] = [];
+        }
+        this.listeners[eventName].push(callable);
     }
 }
 
