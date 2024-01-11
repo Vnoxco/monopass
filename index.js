@@ -94,6 +94,13 @@ class MonoBillCore {
                 }
             }
         });
+
+        window.addEventListener('click', function(event) {
+            if (event.target.matches('a[data-router-link]')) {
+                event.preventDefault();
+                self.router.push(event.target.getAttribute('data-router-link'));
+            }
+        });
     }
 
     alert(type, message) {
