@@ -37,9 +37,6 @@ class LoadEvent extends Event {
 
 class RouteChangeEvent extends Event {
     constructor(route, app) {
-        if (!app) {
-            app = true;
-        }
         super('route-change');
         this.route = route
         this.app = app;
