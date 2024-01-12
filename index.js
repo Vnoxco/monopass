@@ -36,9 +36,13 @@ class LoadEvent extends Event {
 }
 
 class RouteChangeEvent extends Event {
-    constructor(route) {
+    constructor(route, app) {
+        if (!app) {
+            app = true;
+        }
         super('route-change');
         this.route = route
+        this.app = app;
     }
 }
 
@@ -51,8 +55,8 @@ class ConfirmActionEvent extends Event {
 }
 
 class Router {
-    push(route) {
-        sendMessage(new RouteChangeEvent(route))
+    push(route, app) {
+        sendMessage(new RouteChangeEvent(route, app))
     }
 }
 
@@ -95,10 +99,15 @@ class MonoBillCore {
             }
         });
 
-        window.addEventListener('click', function(event) {
-            if (event.target.matches('a[data-router-link]')) {
+        window.addEventListener('click', function (event) {
+            let targetLink = event.target.closest('a[data-router-link]');
+            if (targetLink) {
                 event.preventDefault();
-                self.router.push(event.target.getAttribute('data-router-link'));
+                let appLink = targetLink.getAttribute('data-router-link-app');
+                if (appLink === 'undefined' || appLink !== 'false') {
+                    appLink = true;
+                }
+                self.router.push(targetLink.getAttribute('data-router-link'), appLink);
             }
         });
     }
