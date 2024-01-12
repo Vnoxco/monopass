@@ -104,8 +104,10 @@ class MonoBillCore {
             if (targetLink) {
                 event.preventDefault();
                 let appLink = targetLink.getAttribute('data-router-link-app');
-                if (appLink === 'undefined' || appLink !== 'false') {
+                if (typeof appLink === 'undefined' || appLink !== 'false') {
                     appLink = true;
+                } else {
+                    appLink = false;
                 }
                 self.router.push(targetLink.getAttribute('data-router-link'), appLink);
             }
