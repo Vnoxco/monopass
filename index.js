@@ -103,12 +103,7 @@ class MonoBillCore {
             let targetLink = event.target.closest('a[data-router-link]');
             if (targetLink) {
                 event.preventDefault();
-                let appLink = targetLink.getAttribute('data-router-link-app');
-                if (typeof appLink === 'undefined' || appLink !== 'false') {
-                    appLink = true;
-                } else {
-                    appLink = false;
-                }
+                let appLink = targetLink.getAttribute('data-router-link-app') === 'true';
                 self.router.push(targetLink.getAttribute('data-router-link'), appLink);
             }
         });
