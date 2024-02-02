@@ -1,4 +1,4 @@
-let currentHeight = document.body.offsetHeight + 35;
+let currentHeight = document.body.offsetHeight;
 
 let sendMessage = function (data) {
     if (data instanceof Event) {
@@ -54,18 +54,20 @@ class ConfirmActionEvent extends Event {
     }
 }
 
+class AddSideNavigationLinkEvent extends Event {
+    constructor(hmac, label, uri) {
+        super('add-sidenavigation-link');
+        this.hmac = hmac;
+        this.label = label;
+        this.uri = uri;
+    }
+}
+
 class Router {
     push(route, app) {
         sendMessage(new RouteChangeEvent(route, app))
     }
 }
-
-// class HeightChange extends Event {
-//     constructor() {
-//         super('height-change');
-//         // this.height = document.body.offsetHeight + 40;
-//     }
-// }
 
 class MonoBillCore {
 
@@ -107,6 +109,10 @@ class MonoBillCore {
                 self.router.push(targetLink.getAttribute('data-router-link'), appLink);
             }
         });
+    }
+
+    addSideNavigationLink(hmac, label, uri) {
+        sendMessage(new AddSideNavigationLinkEvent(hmac, label, uri));
     }
 
     alert(type, message) {
