@@ -1,6 +1,6 @@
 {
   "name": "monopass",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "App bridge for MonoBill",
   "main": "index.js",
   "scripts": {

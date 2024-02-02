@@ -56,10 +56,18 @@ class ConfirmActionEvent extends Event {
 
 class AddSideNavigationLinkEvent extends Event {
     constructor(hmac, label, uri) {
-        super('add-sidenavigation-link');
+        super('add-side-navigation-link');
         this.hmac = hmac;
         this.label = label;
         this.uri = uri;
+    }
+}
+
+class setSideNavigationLinksEvent extends Event {
+    constructor(hmac, links) {
+        super('set-side-navigation-links');
+        this.hmac = hmac;
+        this.links = links;
     }
 }
 
@@ -113,6 +121,10 @@ class MonoBillCore {
 
     addSideNavigationLink(hmac, label, uri) {
         sendMessage(new AddSideNavigationLinkEvent(hmac, label, uri));
+    }
+
+    setSideNavigationLinks(hmac, links) {
+        sendMessage(new setSideNavigationLinksEvent(hmac, links));
     }
 
     alert(type, message) {
