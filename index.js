@@ -54,6 +54,14 @@ class ConfirmActionEvent extends Event {
     }
 }
 
+class OpenResourcePickerEvent extends Event {
+    constructor(hmac, type) {
+        super('open-resource-picker');
+        this.hmac = hmac;
+        this.type = type;
+    }
+}
+
 class AddSideNavigationLinkEvent extends Event {
     constructor(hmac, label, uri) {
         super('add-side-navigation-link');
@@ -62,6 +70,7 @@ class AddSideNavigationLinkEvent extends Event {
         this.uri = uri;
     }
 }
+
 
 class setSideNavigationLinksEvent extends Event {
     constructor(hmac, links) {
@@ -84,6 +93,7 @@ class MonoBillCore {
     constructor() {
         this.router = new Router();
         this.confirmActions = {};
+        this.selectResourceCallBacks = {};
         sendMessage(new LoadEvent());
         let self = this;
 
@@ -105,6 +115,13 @@ class MonoBillCore {
             if (typeof message.confirm_action !== 'undefined') {
                 if (typeof self.confirmActions[message.confirm_action] === 'function') {
                     self.confirmActions[message.confirm_action]();
+                    delete self.confirmActions[message.confirm_action];
+                }
+            }
+            if(typeof message.selected_resource !== 'undefined'){
+                if (typeof self.selectResourceCallBacks[message.selected_resource.uuid] === 'function') {
+                    self.selectResourceCallBacks[message.selected_resource.uuid](message.selected_resource);
+                    delete self.selectResourceCallBacks[message.selected_resource.uuid];
                 }
             }
         });
@@ -117,6 +134,10 @@ class MonoBillCore {
                 self.router.push(targetLink.getAttribute('data-router-link'), appLink);
             }
         });
+    }
+
+    openResourcePicker(hmac, type) {
+        sendMessage(new OpenResourcePickerEvent(hmac, type));
     }
 
     addSideNavigationLink(hmac, label, uri) {
