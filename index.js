@@ -137,8 +137,9 @@ class MonoBillCore {
         });
     }
 
-    openResourcePicker(hmac, type) {
+    openResourcePicker(hmac, type, func) {
         let id = Math.random().toString(36);
+        this.selectResourceCallBacks[id] = func;
         sendMessage(new OpenResourcePickerEvent(hmac, type, id));
     }
 
