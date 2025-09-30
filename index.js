@@ -49,14 +49,15 @@ class RouteChangeEvent extends Event {
 class ConfirmActionEvent extends Event {
     constructor(id, message) {
         super('confirm-action');
-        this.id = id;
+        this.mp_id = id;
         this.message = message;
     }
 }
 
 class OpenResourcePickerEvent extends Event {
-    constructor(hmac, type) {
+    constructor(hmac, type, id) {
         super('open-resource-picker');
+        this.mp_id = id;
         this.hmac = hmac;
         this.type = type;
     }
@@ -119,9 +120,9 @@ class MonoBillCore {
                 }
             }
             if(typeof message.selected_resource !== 'undefined'){
-                if (typeof self.selectResourceCallBacks[message.selected_resource.uuid] === 'function') {
-                    self.selectResourceCallBacks[message.selected_resource.uuid](message.selected_resource);
-                    delete self.selectResourceCallBacks[message.selected_resource.uuid];
+                if (typeof self.selectResourceCallBacks[message.mp_id] === 'function') {
+                    self.selectResourceCallBacks[message.mp_id](message.selected_resource);
+                    delete self.selectResourceCallBacks[message.mp_id];
                 }
             }
         });
@@ -137,7 +138,8 @@ class MonoBillCore {
     }
 
     openResourcePicker(hmac, type) {
-        sendMessage(new OpenResourcePickerEvent(hmac, type));
+        let id = Math.random().toString(36);
+        sendMessage(new OpenResourcePickerEvent(hmac, type, id));
     }
 
     addSideNavigationLink(hmac, label, uri) {
