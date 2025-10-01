@@ -90,7 +90,8 @@ class MonoBillCore {
             let message = JSON.parse(event.data);
             if (message.request && message.request === 'height') {
                 window.parent.postMessage(JSON.stringify({
-                    height: document.body.offsetHeight + 35
+                    height: document.body.offsetHeight + 35,
+                    hmac: self.hmac
                 }), '*');
             }
             if (message.route && typeof self.listeners['route-change'] !== 'undefined') {
