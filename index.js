@@ -35,7 +35,7 @@ class RouteChangeEvent extends Event {
 class ConfirmActionEvent extends Event {
     constructor(id, message) {
         super('confirm-action');
-        this.mp_id = id;
+        this.callback_id = id;
         this.message = message;
     }
 }
@@ -43,7 +43,7 @@ class ConfirmActionEvent extends Event {
 class OpenResourcePickerEvent extends Event {
     constructor(type, id) {
         super('open-resource-picker');
-        this.mp_id = id;
+        this.callback_id = id;
         this.type = type;
     }
 }
@@ -109,9 +109,9 @@ class MonoBillCore {
                 }
             }
             if(typeof message.selected_resource !== 'undefined'){
-                if (typeof self.selectResourceCallBacks[message.mp_id] === 'function') {
-                    self.selectResourceCallBacks[message.mp_id](message.selected_resource);
-                    delete self.selectResourceCallBacks[message.mp_id];
+                if (typeof self.selectResourceCallBacks[message.callback_id] === 'function') {
+                    self.selectResourceCallBacks[message.callback_id](message.selected_resource);
+                    delete self.selectResourceCallBacks[message.callback_id];
                 }
             }
         });
