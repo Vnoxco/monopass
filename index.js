@@ -1,30 +1,16 @@
 let currentHeight = document.body.offsetHeight;
 
-let sendMessage = function (data) {
-    if (data instanceof Event) {
-        window.parent.postMessage(JSON.stringify({
-            ...data,
-            event: data.name
-        }), '*');
-    } else if (data instanceof MonoAlert) {
-        window.parent.postMessage(JSON.stringify({
-            alert: data
-        }), '*');
-    } else {
-        window.parent.postMessage(JSON.stringify(data), '*');
-    }
-}
-
-class MonoAlert {
-    constructor(type, message) {
-        this.type = type;
-        this.message = message;
-    }
-}
-
 class Event {
     constructor(name) {
         this.name = name;
+    }
+}
+
+class MonoAlert extends Event {
+    constructor(type, message) {
+        super('alert');
+        this.type = type;
+        this.message = message;
     }
 }
 
@@ -55,18 +41,16 @@ class ConfirmActionEvent extends Event {
 }
 
 class OpenResourcePickerEvent extends Event {
-    constructor(hmac, type, id) {
+    constructor(type, id) {
         super('open-resource-picker');
         this.mp_id = id;
-        this.hmac = hmac;
         this.type = type;
     }
 }
 
 class AddSideNavigationLinkEvent extends Event {
-    constructor(hmac, label, uri) {
+    constructor(label, uri) {
         super('add-side-navigation-link');
-        this.hmac = hmac;
         this.label = label;
         this.uri = uri;
     }
@@ -74,9 +58,8 @@ class AddSideNavigationLinkEvent extends Event {
 
 
 class setSideNavigationLinksEvent extends Event {
-    constructor(hmac, links) {
+    constructor(links) {
         super('set-side-navigation-links');
-        this.hmac = hmac;
         this.links = links;
     }
 }
@@ -90,12 +73,17 @@ class Router {
 class MonoBillCore {
 
     listeners = {};
+    hmac = null;
 
-    constructor() {
+    constructor(hmac) {
+        this.hmac = hmac;
+        if(!this.hmac) {
+            this.hmac = window.hmac;
+        }
         this.router = new Router();
         this.confirmActions = {};
         this.selectResourceCallBacks = {};
-        sendMessage(new LoadEvent());
+        this.sendMessage(new LoadEvent());
         let self = this;
 
         window.addEventListener('message', function (event) {
@@ -137,26 +125,42 @@ class MonoBillCore {
         });
     }
 
-    openResourcePicker(hmac, type, func) {
+   sendMessage(data) {
+        if (data instanceof Event) {
+            window.parent.postMessage(JSON.stringify({
+                ...data,
+                event: data.name,
+                hmac: this.hmac
+            }), '*');
+        } else if (data instanceof MonoAlert) {
+            window.parent.postMessage(JSON.stringify({
+                alert: data
+            }), '*');
+        } else {
+            window.parent.postMessage(JSON.stringify(data), '*');
+        }
+    }
+
+    openResourcePicker(type, func) {
         let id = Math.random().toString(36);
         this.selectResourceCallBacks[id] = func;
-        sendMessage(new OpenResourcePickerEvent(hmac, type, id));
+        this.sendMessage(new OpenResourcePickerEvent(type, id));
     }
 
-    addSideNavigationLink(hmac, label, uri) {
-        sendMessage(new AddSideNavigationLinkEvent(hmac, label, uri));
+    addSideNavigationLink(label, uri) {
+        this.sendMessage(new AddSideNavigationLinkEvent(label, uri));
     }
 
-    setSideNavigationLinks(hmac, links) {
-        sendMessage(new setSideNavigationLinksEvent(hmac, links));
+    setSideNavigationLinks(links) {
+        this.sendMessage(new setSideNavigationLinksEvent(links));
     }
 
     alert(type, message) {
-        sendMessage(new MonoAlert(type, message));
+        this.sendMessage(new MonoAlert(type, message));
     }
 
     scrollToFirstError() {
-        sendMessage({
+        this.sendMessage({
             scrollToFirstError: true,
         })
     }
@@ -164,7 +168,7 @@ class MonoBillCore {
     confirmAction(message, func) {
         let id = Math.random().toString(36);
         this.confirmActions[id] = func;
-        sendMessage(new ConfirmActionEvent(id, message));
+        this.sendMessage(new ConfirmActionEvent(id, message));
     }
 
     on(eventName, callable) {
