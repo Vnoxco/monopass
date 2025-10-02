@@ -65,8 +65,15 @@ class setSideNavigationLinksEvent extends Event {
 }
 
 class Router {
+
+    static core;
+
+    constructor(core) {
+        this.core = core;
+    }
+
     push(route, app) {
-        sendMessage(new RouteChangeEvent(route, app))
+        this.core.sendMessage(new RouteChangeEvent(route, app))
     }
 }
 
@@ -80,7 +87,7 @@ class MonoBillCore {
         if(!this.hmac) {
             this.hmac = window.hmac;
         }
-        this.router = new Router();
+        this.router = new Router(this);
         this.confirmActions = {};
         this.selectResourceCallBacks = {};
         this.sendMessage(new LoadEvent());
