@@ -41,10 +41,10 @@ class ConfirmActionEvent extends Event {
 }
 
 class OpenResourcePickerEvent extends Event {
-    constructor(type, id) {
+    constructor(options, id) {
         super('open-resource-picker');
         this.callback_id = id;
-        this.type = type;
+        this.options = options;
     }
 }
 
@@ -90,6 +90,7 @@ class MonoBillCore {
         this.router = new Router(this);
         this.confirmActions = {};
         this.selectResourceCallBacks = {};
+        this.closeResourceCallBacks = {};
         this.sendMessage(new LoadEvent());
         let self = this;
 
@@ -121,6 +122,12 @@ class MonoBillCore {
                     delete self.selectResourceCallBacks[message.callback_id];
                 }
             }
+            if(typeof message.close_resource_picker !== 'undefined'){
+                if (typeof self.closeResourceCallBacks[message.callback_id] === 'function') {
+                    self.closeResourceCallBacks[message.callback_id]();
+                    delete self.closeResourceCallBacks[message.callback_id];
+                }
+            }
         });
 
         window.addEventListener('click', function (event) {
@@ -149,10 +156,29 @@ class MonoBillCore {
         }
     }
 
-    openResourcePicker(type, func) {
+
+    /**
+     * @typedef {'product' | 'category' | 'page'} ResourcePickerType
+     */
+
+    /**
+     * @typedef {Object} ResourcePickerOptions
+     * @property {ResourcePickerType} type - The type of resource picker to open
+     * @property {boolean} multiple   - Allow multiple resources to be selected
+     * @property {function} onSelected   - Some resources were selected
+     * @property {function} onClose   - The resource picker was closed without selected any option
+     */
+
+    /**
+     * Print a document
+     * @param {ResourcePickerOptions} options
+     */
+
+    openResourcePicker(options) {
         let id = Math.random().toString(36);
-        this.selectResourceCallBacks[id] = func;
-        this.sendMessage(new OpenResourcePickerEvent(type, id));
+        this.selectResourceCallBacks[id] = options.onSelected;
+        this.closeResourceCallBacks[id] = options.onClose;
+        this.sendMessage(new OpenResourcePickerEvent(options, id));
     }
 
     addSideNavigationLink(label, uri) {
